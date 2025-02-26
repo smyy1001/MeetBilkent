@@ -1,0 +1,165 @@
+/* Main container for the profile section */
+.profile-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  margin-top: 100px !important;
+  padding: 1.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-family: 'Arial', sans-serif;
+}
+
+/* Header with profile picture and name */
+.profile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.profile-picture {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.profile-picture img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #f0f0f0;
+}
+
+.profile-info h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.profile-info h2 span {
+  font-size: 1rem;
+  font-weight: normal;
+  color: #888;
+}
+
+.profile-info p {
+  margin: 0.2rem 0;
+  font-size: 1rem;
+  color: #f9a825;
+  font-weight: bold;
+}
+
+/* Three-dot menu */
+.profile-menu {
+  position: relative;
+}
+
+.menu-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #888;
+}
+
+.menu-items {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 30px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.menu-items.show {
+  display: block;
+}
+
+.menu-items li {
+  list-style: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.menu-items li:hover {
+  background: #f5f5f5;
+}
+
+/* Profile details section */
+.profile-details {
+  margin-top: 1.5rem;
+}
+
+.profile-details p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: #555;
+}
+
+.profile-details p strong {
+  font-weight: bold;
+  color: #333;
+}
+
+/* Buttons */
+.profile-buttons {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button.edit-button {
+  background-color: #ff5a5a;
+}
+
+button.edit-button:hover {
+  background-color: #e04c4c;
+}
+
+button.calendar-button {
+  background-color: #007bff;
+}
+
+button.calendar-button:hover {
+  background-color: #0056b3;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 1rem;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .profile-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  button {
+    width: 100%;
+  }
+}

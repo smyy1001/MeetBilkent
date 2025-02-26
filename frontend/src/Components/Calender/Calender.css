@@ -1,0 +1,129 @@
+.fc-direction-ltr {
+  width: 40vw;
+  height: 80vh;
+}
+
+/* Gün başlıkları */
+.fc-col-header-cell {
+  background-color: #f0f3f7; /* Açık gri */
+  color: #0b2e5c; /* Lacivert yazı */
+  font-weight: bold;
+  padding: 10px;
+  border: 1px solid #d3d3d3; /* Gri çerçeve */
+}
+
+/* Sol ve sağ navigasyon butonları */
+.fc-toolbar .fc-button {
+  background-color: black !important; /* Siyah arka plan */
+  color: white !important; /* Beyaz yazı */
+  border: none !important; /* Çerçeveyi kaldır */
+  border-radius: 4px; /* Köşeleri yuvarla */
+  padding: 5px 10px; /* İç boşluk */
+  font-size: 14px; /* Yazı boyutu */
+  cursor: pointer; /* El işareti */
+  transition: background-color 0.3s ease; /* Hover geçiş efekti */
+}
+.fc-list-day-text {
+  color: black;
+  text-decoration: none;
+}
+.fc-list-event-dot {
+  border: black !important;
+}
+
+.fc-list-day-side-text {
+  color: black;
+  text-decoration: none;
+}
+
+/* Hover durumunda buton */
+.fc-toolbar .fc-button:hover {
+  background-color: #333 !important; /* Daha koyu siyah */
+  color: white !important; /* Beyaz yazı */
+}
+
+/* Tıklanmış (active) buton */
+.fc-toolbar .fc-button:active {
+  background-color: #555 !important; /* Gri */
+}
+.fc-event {
+  font-size: 12px; /* Yazı boyutunu küçült */
+  padding: 2px 4px; /* Daha az iç boşluk */
+  border-radius: 4px; /* Köşeleri yuvarlat */
+}
+
+.fc-col-header-cell-cushion {
+  display: inline-block;
+  padding: 2px 4px;
+  color: black;
+  text-decoration: none;
+}
+/* Style for upcoming events */
+.fc-event.upcoming-event {
+  background-color: lightcoral;
+  border-color: darkred;
+  color: white;
+}
+
+/* Style for previous events */
+.fc-event.previous-event {
+  background-color: lightblue;
+  border-color: darkblugree;
+  color: black;
+}
+/* Tarih hücreleri */
+.fc-daygrid-day-number {
+  text-decoration: none; /* Alt çizgiyi kaldır */
+  color: black;
+  font-weight: bold;
+}
+
+/* Ay ve başlık stili */
+.fc-toolbar-title {
+  color: black; /* Lacivert */
+  font-size: 20px;
+  font-weight: bold;
+}
+/* Gün sayılarını beyaz yap */
+.fc-daygrid-day-top {
+  background-color: #f0f3f7; /* Açık gri arkaplan */
+  color: #0b2e5c; /* Lacivert */
+}
+
+/* Tarih hücreleri varsayılan stil */
+.fc-daygrid-day {
+  background-color: white; /* Beyaz arkaplan */
+  border: 1px solid #d3d3d3; /* Gri çerçeve */
+  color: black; /* Siyah yazı */
+}
+/* Previous events */
+.fc-event.upcoming-event {
+  overflow: hidden;
+  background-color: #ec2f38; /* Kırmızı */
+  border-color: #ac0d0d; /* Daha koyu kırmızı çerçeve */
+  color: white; /* Beyaz yazı */
+  border-radius: 8px; /* Yuvarlak köşe */
+  padding: 4px; /* İç boşluk */
+}
+
+/* Upcoming events */
+.fc-event.previous-event {
+  background-color: green; /* Lacivert */
+  border-color: #061f3b; /* Daha koyu lacivert çerçeve */
+  color: white; /* Beyaz yazı */
+  border-radius: 8px; /* Yuvarlak köşe */
+  padding: 4px; /* İç boşluk */
+}
+
+/* Günlere hover efekti */
+.fc-daygrid-day:hover {
+  background-color: #f0f3f7; /* Açık gri hover */
+  color: black; /* Lacivert yazı */
+  cursor: pointer;
+}
+
+/* Önceki ve sonraki ayların günleri */
+.fc-day-other {
+  background-color: #f0f3f7; /* Açık gri */
+  color: #a9a9a9; /* Daha soluk yazı */
+}

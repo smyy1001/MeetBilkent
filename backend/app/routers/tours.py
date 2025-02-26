@@ -1,0 +1,405 @@
+from datetime import datetime, timedelta
+from fastapi import FastAPI, HTTPException, Depends, APIRouter, Body
+from sqlalchemy.orm import Session
+import app.db.models as models
+from app.deps import get_db
+import app.schemas as schemas
+from app.utils import hash_password
+from pydantic import UUID4
+from typing import List
+from app.utils import sendEmail
+# used for reminding a return of empty list etc
+import logging
+# Configure logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
+
+router = APIRouter()
+# NOTE : THIS FILE MIGHT BE THE MOST IMPORTANT OUT OF ALL ROUTERS.
+# NOTE : Adminler sudo/accept çağırırsa direk onay/ ret atabiliyor, admin/accept çağırırsa adviser onayı gerekiyor.
+# Bunu şu yüzden yaptım, admin önce gelcek basacak bi tura onaya mesela (düz admin/accept kullanıp) "adviser henüz kabul etmemiş onaylamak istiyor musunuz" dedikten sonra evet derse "SUDO" kullanmış olacak
+
+
+# ERROR RESOLVED (multiple requests for the same timestamp from the same highschool are not possible nows)
+# send tour request
+# TODO
+@router.post("/send_tour_request/", response_model=schemas.Tour)
+def send_tour_request(tour: schemas.TourCreate, db: Session = Depends(get_db)):
+
+    db_tours = db.query(models.Tour).filter(models.Tour.high_school_name == tour.high_school_name, models.Tour.date == tour.date).first()
+    if db_tours:
+        raise HTTPException(status_code=400, detail=f"Böyle bir tur zaten var, muhtemelen duplicate form atılmış.")
+
+    db_school = (
+        db.query(models.School)
+        .filter(
+            models.School.school_name == tour.high_school_name
+        )
+        .first()
+    )
+
+    if db_school is None:
+        raise HTTPException(status_code=400, detail="Okul bulunamadı")
+
+    current_date = datetime.now()
+    if tour.date < current_date + timedelta(weeks=2):
+        raise HTTPException(status_code=400, detail="Tur tarihi, formun gönderildiği tarihten en az 2 hafta sonra olmalıdır.")
+    # Prepare the tour data without duplicating `high_school_name`
+    tour_data = tour.dict()
+    tour_data["school_email"] = db_school.email 
+    tour_data["high_school_name"] = db_school.school_name
+
+    # Create a new Tour instance
+    new_tour = models.Tour(**tour_data)
+
+    db.add(new_tour)
+    db.commit()
+    db.refresh(new_tour)
+    return new_tour
+
+
+# ADVISER accept tour request
+# TESTED
+# tourların default confirmation ı "PENDING" , adviser BTO ONAY ya da BTO RET yapıyor
+# adviser accept, reject ve sonra Dilek Hoca accept reject edebiliyor, bunlara göre confirmation state değişiyor 4 tane metod ediyor her biri için
+@router.post("/advisor/accept_tour/{tour_id}", response_model=schemas.Tour)
+def adviser_accept_form(tour_id: int, feedback: str, db: Session = Depends(get_db)):
+    # get the form  with id
+    db_tour = db.query(models.Tour).filter(models.Tour.id == tour_id).first()
+    #if form not found, throw error
+    if not db_tour:
+        raise HTTPException(status_code=400, detail=f'id\'si = {tour_id} olan tur bulunamadı.')
+    #if form is already confirmed or passed throw error
+    if db_tour.confirmation != "PENDING": # error prone
+        raise HTTPException(status_code=400, detail="Tur daha önceden değerlendirilmiş")
+    #TODO > 60 sa error 
+     
+    # adviser accepts the form.
+    db_tour.confirmation = "BTO ONAY"
+    db_tour.feedback = feedback
+     # Commit the changes to the database
+    try:
+        db.commit()
+        db.refresh(db_tour)  
+    except Exception as e:
+        db.rollback()  # Roll back the session in case of an error
+        raise HTTPException(status_code=500, detail="Tur onaylama işlemi başarısız oldu")
+    
+    return db_tour
+
+
+# ADVISER reject tour request
+# TESTED
+# yukarıdakine baya benziyor sadece confirmation BTO RET oluyor
+@router.post("/advisor/reject_tour/{tour_id}", response_model=schemas.Tour)
+def adviser_reject_form(tour_id: int, feedback: str, db: Session = Depends(get_db)):
+    # get the form  with id
+    db_tour = db.query(models.Tour).filter(models.Tour.id == tour_id).first()
+    # if form not found, throw error
+    if not db_tour:
+        raise HTTPException(status_code=400, detail=f'id\'si = {tour_id} olan tur bulunamadı.')
+    # if form is already confirmed or passed throw error
+    if db_tour.confirmation != "PENDING": # error prone
+        raise HTTPException(status_code=400, detail="Tur daha önceden değerlendirilmiş")
+
+    # adviser rejects the form.
+    db_tour.confirmation = "BTO RET"
+    db_tour.feedback = feedback
+
+    # commit the changes to the database
+    try:
+        db.commit()
+        db.refresh(db_tour)  
+    except Exception as e:
+        db.rollback()  # Roll back the session in case of an error
+        raise HTTPException(status_code=500, detail="Tur ret işlemi başarısız oldu")
+
+    receiver_email = db_tour.school_email
+    feedback = db_tour.feedback
+    # Send the email
+    message = (
+        f"Üzülerek bildiririz ki, tur başvurunuz \"{feedback}\" nedeniyle reddedilmiştir. "
+        "Lütfen formu gözden geçirin ve tekrar deneyin.\n\n"
+        "İyi Günler Dileriz,\nBilkent Tanıtım Ofisi"
+    )
+
+    # Send the email
+    sendEmail(
+        subject="Bilkent Fuar Başvuru Güncellemesi",
+        message=message,  # Ensure this is a string
+        receiver_email=receiver_email
+    )
+
+    return db_tour
+
+# ADMIN accept tour request
+# TESTED
+@router.post("/admin/accept_tour/{tour_id}", response_model=schemas.Tour)
+def accept_tour(
+    tour_id: int, feedback: str, db: Session = Depends(get_db)
+):
+    # get the form  with id
+    db_tour = db.query(models.Tour).filter(models.Tour.id == tour_id).first()
+    # if form not found, throw error
+    if not db_tour:
+        raise HTTPException(
+            status_code=400, detail=f"id'si = {tour_id} olan tur bulunamadı."
+        )
+    # if form is already confirmed or passed throw error
+    if db_tour.confirmation != "BTO ONAY": # error prone
+        raise HTTPException(status_code=400, detail="Turu adviser onaylamamış, ya da daha önce bir admin değerlendirmiş")
+
+    # ADMIN accepts the form.
+    db_tour.confirmation = "ONAY"
+    db_tour.feedback = feedback
+    # Commit the changes to the database
+    try:
+        db.commit()
+        db.refresh(db_tour)  
+    except Exception as e:
+        db.rollback()  # Roll back the session in case of an error
+        raise HTTPException(status_code=500, detail="Tur onaylama işlemi başarısız oldu")
+
+    receiver_email = db_tour.school_email
+    # Send the email
+    sendEmail(
+        subject="Bilkent Fuar Başvuru Güncellemesi",
+        message="Bilkent fuar başvurunuz kabul edilmiştir, detaylara websitesi üzerinden ulaşabilirsiniz.\n\nİyi Günler Dileriz,\nBilkent Tanıtım Ofisi",
+        receiver_email=receiver_email
+    )
+
+    return db_tour
+
+
+# TODO ADMIN reject tour request
+# TESTED
+@router.post("/admin/reject_tour/{tour_id}", response_model=schemas.Tour)
+def reject_tour(tour_id: int, feedback: str, db: Session = Depends(get_db)):
+    # get the form  with id
+    db_tour = db.query(models.Tour).filter(models.Tour.id == tour_id).first()
+    # if form not found, throw error
+    if not db_tour:
+        raise HTTPException(status_code=400, detail=f'id\'si = {tour_id} olan tur bulunamadı.')
+    # if form is already confirmed or passed, throw error
+    if db_tour.confirmation != "BTO RET" and db_tour.confirmation != "BTO ONAY": # both BTO RET and BTO ONAY are acceptable.
+        raise HTTPException(status_code=400, detail="Turu adviser değerlendirmemiş, ya da daha önce bir admin değerlendirmiş.")
+
+    # ADMIN rejects the form.
+    db_tour.confirmation = "RET"
+    db_tour.feedback = feedback
+    # Commit the changes to the database
+    try:
+        db.commit()
+        db.refresh(db_tour)  
+    except Exception as e:
+        db.rollback()  # Roll back the session in case of an error
+        logging.error(f"Error while rejecting tour: {e}")
+        raise HTTPException(status_code=500, detail="Tur onaylama işlemi başarısız oldu")
+
+    logging.info(f"Tour with ID {tour_id} rejected successfully.")
+
+    receiver_email = db_tour.school_email
+    feedback = db_tour.feedback
+    # Send the email
+    message = (
+        f"Üzülerek bildiririz ki, tur başvurunuz \"{feedback}\" nedeniyle reddedilmiştir. "
+        "Lütfen formu gözden geçirin ve tekrar deneyin.\n\n"
+        "İyi Günler Dileriz,\nBilkent Tanıtım Ofisi"
+    )
+
+    # Send the email
+    sendEmail(
+        subject="Bilkent Fuar Başvuru Güncellemesi",
+        message=message,  # Ensure this is a string
+        receiver_email=receiver_email
+    )
+
+    return db_tour
+
+
+#  SUDO ACCEPT TOUR
+#  TESTED
+@router.post("/sudo/accept_tour/{tour_id}", response_model=schemas.Tour)
+def sudo_accept_tour(tour_id: int, feedback: str , db: Session = Depends(get_db)):
+    # get the form  with id
+    db_tour = db.query(models.Tour).filter(models.Tour.id == tour_id).first()
+    # if form not found, throw error
+    if not db_tour:
+        raise HTTPException(
+            status_code=400, detail=f"id'si = {tour_id} olan tur bulunamadı."
+        )
+    # if form is already confirmed or passed throw error
+    # DO IT ANYWAY
+
+    # ADMIN accepts the form.
+    db_tour.confirmation = "ONAY"
+    db_tour.feedback = feedback
+    # Commit the changes to the database
+    try:
+        db.commit()
+        db.refresh(db_tour)  
+    except Exception as e:
+        db.rollback()  # Roll back the session in case of an error
+        raise HTTPException(status_code=500, detail="Tur onaylama işlemi başarısız oldu")
+
+    return db_tour
+
+# SUDO REJECT
+# TESTED
+@router.post("/sudo/reject_tour/{tour_id}", response_model=schemas.Tour)
+def sudo_reject_tour(tour_id: int, feedback: str, db: Session = Depends(get_db)):
+    # get the form  with id
+    db_tour = db.query(models.Tour).filter(models.Tour.id == tour_id).first()
+    # if form not found, throw error
+    if not db_tour:
+        raise HTTPException(status_code=400, detail=f'id\'si = {tour_id} olan tur bulunamadı.')
+    # if form is already confirmed or passed throw error
+    # SUDO -> DO IT ANYWAY
+
+    # ADMIN REJECTS the form.
+    db_tour.confirmation = "RET"
+    db_tour.feedback = feedback
+    # Commit the changes to the database
+    try:
+        db.commit()
+        db.refresh(db_tour)  
+    except Exception as e:
+        db.rollback()  # Roll back the session in case of an error
+        raise HTTPException(status_code=500, detail="Tur onaylama işlemi başarısız oldu")
+
+    receiver_email = db_tour.school_email
+    feedback = db_tour.feedback
+    # Send the email
+    message = (
+        f"Üzülerek bildiririz ki, tur başvurunuz \"{feedback}\" nedeniyle reddedilmiştir. "
+        "Lütfen formu gözden geçirin ve tekrar deneyin.\n\n"
+        "İyi Günler Dileriz,\nBilkent Tanıtım Ofisi"
+    )
+
+    # Send the email
+    sendEmail(
+        subject="Bilkent Fuar Başvuru Güncellemesi",
+        message=message,  # Ensure this is a string
+        receiver_email=receiver_email
+    )
+
+    return db_tour
+
+""" already exists in guides_tour.py 
+ #show guide tours
+ #see the guides's own tours, returns [] if not found
+@router.get("/show_guide_tours/{guide_id}", response_model=List[schemas.Tour])
+def show_guide_tours(guide_id: UUID4, db: Session = Depends(get_db)):
+    # we get all the tour ids from the junction table.
+    db_tours = (
+        db.query(models.GuideTour.tour_id)
+        .filter(models.GuideTour.guide_id == guide_id)
+        .all()
+    )
+    # check if anything exists
+    if not db_tours:
+        logging.debug("see own tours is empty")
+        return []  # => maybe we can return "Burada henüz bir şey yok."
+        # raise HTTPException(status_code=401, detail="Verilen guide_id ile eşleşen bir tane bile tour bulunamadı. :)")
+    # we need to convert the tour_ids into tours from Tours :) right now tours look like this => [(1,), (2,), (3,)]
+    tour_ids = [tour_id[0] for tour_id in db_tours]  # [1,2,3]
+    # now select the tours with corresponding tour_ids
+    tours = db.query(models.Tour).filter(models.Tour.id.in_(tour_ids)).all()
+    return tours
+
+ """
+# show all
+# TESTED
+# see the guides's own tours, returns [] if not found
+@router.get("/all/", response_model=List[schemas.Tour])
+def show_all_tours( db: Session = Depends(get_db)):
+    # we get all the tour ids from the junction table.
+    db_tours = (
+        db.query(models.Tour)
+        .all()
+    )
+    # check if anything exists
+    if not db_tours:
+        logging.debug("see own tours is empty")  # => maybe we can return "Burada henüz bir şey yok."
+    return db_tours
+
+# TESTED
+# see the guides's own tours, returns [] if not found
+@router.get("/show/{tour_id}", response_model=schemas.Tour)
+def show_one_tour( tour_id: int, db: Session = Depends(get_db)):
+    db_tour = (
+        db.query(models.Tour).filter(models.Tour.id == tour_id)
+        .first()
+    )
+    # check if anything exists
+    if not db_tour:
+        logging.debug("tour is not found")  # => maybe we can return "Burada henüz bir şey yok."
+        raise HTTPException(status_code=404, detail=f"Verilen tour_id ={tour_id} ile eşleşen bir tour bulunamadı.")
+    return db_tour
+
+# TESTED
+# NOTE  Call this function with 'date' specified! Otherwise will throw e
+# see the guides's own tours, returns [] if not found
+@router.patch("/edit/{tour_id}", response_model=schemas.Tour)
+def edit_tour( tour_id: int, tour: schemas.TourBase, db: Session = Depends(get_db)):
+    #find the tour
+    db_tour = db.query(models.Tour).filter(models.Tour.id == tour_id).first()
+    # check if anything exists
+    if not db_tour:
+        logging.debug("tour is not found")  # => maybe we can return "Burada henüz bir şey yok."
+        raise HTTPException(status_code=404, detail=f"Verilen tour_id ={tour_id} ile eşleşen bir tour bulunamadı.")
+    for key, value in tour.dict(exclude_unset=True).items():
+        setattr(db_tour, key, value)
+    
+    # Commit the changes to the database
+    try:
+        db.commit()
+        db.refresh(db_tour)
+    except Exception as e:
+        db.rollback()  # Roll back the session in case of an error
+        logging.error(f"Error while updating tour: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update the tour.")
+    
+    logging.info(f"Tour with ID {tour_id} updated successfully.")
+    return db_tour
+
+
+@router.post("/send-email")
+async def send_email_to_user(email: str = Body(..., embed=False)):
+
+    # E-posta içeriğini burada düzenleyin
+    subject = "Bilkent Üniversitesi Ziyareti"
+    message = "Değerli Öğrenci Adayımız,\n\nBilkent Üniversitesi’ni ziyaret etmek için başvurunuz alındı.\nKampüsümüzü ziyaret edeceğiniz için çok heyecanlıyız. Ziyaret detaylarını aşağıda bulabilirsiniz:\n\n- Tarih: Haftaiçi her gün\n- Saat: 09:00 - 19:00\n- Yer: Bilkent Üniversitesi Rektörlüğü önü\n\nSorularınız için bizimle iletişime geçmekten çekinmeyin: info@bilkent.edu.tr\n\nSaygılarımızla,\nBilkent Üniversitesi"
+
+    # send_email methodunu kullanarak e-posta gönder
+    sendEmail(subject=subject, message=message, receiver_email=email)
+    return {"message": f"E-posta başarıyla {email} adresine gönderildi."}
+
+
+@router.get("/all/accepted/", response_model=List[schemas.Tour])
+def show_all_tours2(db: Session = Depends(get_db)):
+    db_tours = db.query(models.Tour).filter(models.Tour.confirmation == "ONAY").all()
+    # check if anything exists
+    if not db_tours:
+        logging.debug(
+            "see own tours is empty"
+        )  # => maybe we can return "Burada henüz bir şey yok."
+    return db_tours
+
+
+@router.get(
+    "/all/accepted_school/{high_school_name}", response_model=List[schemas.Tour]
+)
+def show_all_tours3(high_school_name: str, db: Session = Depends(get_db)):
+    db_tours = (
+        db.query(models.Tour)
+        .filter(models.Tour.confirmation == "ONAY")
+        .filter(models.Tour.high_school_name == high_school_name)
+        .all()
+    )
+    # check if anything exists
+    if not db_tours:
+        logging.debug(
+            "see own tours is empty"
+        )  # => maybe we can return "Burada henüz bir şey yok."
+    return db_tours

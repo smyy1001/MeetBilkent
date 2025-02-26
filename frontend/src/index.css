@@ -1,0 +1,154 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+/* Tüm body için global font */
+body {
+  font-family: "Inter", sans-serif !important;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-size: 16px; /* Varsayılan font boyutu */
+  line-height: 1.5; /* Varsayılan satır yüksekliği */
+}
+
+/* Header elemanları için */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Inter", sans-serif !important;
+  margin: 0;
+  font-weight: 700; /* Varsayılan olarak bold */
+  line-height: 1.2; /* Header için satır yüksekliği */
+}
+
+/* Paragraflar için */
+p {
+  font-family: "Inter", sans-serif !important;
+  margin: 0;
+  font-style: italic;
+  font-weight: 400; /* Normal ağırlık */
+  color: #333; /* Daha okunabilir bir renk */
+}
+
+/* Linkler için */
+a {
+  font-family: "Inter", sans-serif;
+  font-weight: 500; /* Medium ağırlık */
+  text-decoration: none; /* Alt çizgiyi kaldır */
+  color: #0066cc; /* Varsayılan link rengi */
+}
+
+a:hover {
+  text-decoration: underline; /* Hover durumunda alt çizgi ekle */
+  color: #004499; /* Daha koyu hover rengi */
+}
+
+/* Listeler için */
+ul,
+ol {
+  font-family: "Inter", sans-serif;
+  margin: 0;
+  padding: 0;
+  font-weight: 400;
+  color: #333;
+  list-style-position: inside; /* Liste işaretlerini içeride tut */
+}
+/* Font ağırlıkları için yardımcı sınıflar */
+.font-thin {
+  font-weight: 100;
+}
+
+.font-light {
+  font-weight: 300;
+}
+
+.font-regular {
+  font-weight: 400;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.font-bold {
+  font-weight: 700 !important;
+}
+
+.font-black {
+  font-weight: 900;
+}
+
+/* Font boyutları için yardımcı sınıflar */
+.text-sm {
+  font-size: 14px;
+}
+
+.text-base {
+  font-size: 16px; /* Font ağırlıkları için yardımcı sınıflar */
+  .font-thin {
+    font-weight: 100;
+  }
+
+  .font-light {
+    font-weight: 300;
+  }
+
+  .font-regular {
+    font-weight: 400;
+  }
+
+  .font-medium {
+    font-weight: 500;
+  }
+
+  .font-bold {
+    font-weight: 700;
+  }
+
+  .font-black {
+    font-weight: 900;
+  }
+
+  /* Font boyutları için yardımcı sınıflar */
+  .text-sm {
+    font-size: 14px;
+  }
+
+  .text-base {
+    font-size: 16px;
+  }
+
+  .text-lg {
+    font-size: 18px;
+  }
+
+  .text-xl {
+    font-size: 20px;
+  }
+
+  .text-2xl {
+    font-size: 24px;
+  }
+
+  .text-3xl {
+    font-size: 30px;
+  }
+}
+
+.text-lg {
+  font-size: 18px;
+}
+
+.text-xl {
+  font-size: 20px;
+}
+
+.text-2xl {
+  font-size: 24px;
+}
+
+.text-3xl {
+  font-size: 30px;
+}

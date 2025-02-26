@@ -1,0 +1,282 @@
+.home-page-outer-container {
+    height: 300vh; /* Full viewport height */
+    display: flex;
+    flex-direction: column;
+    background-color: whitesmoke; /* Light gray background */
+}
+
+.homeSliderPhotos {
+    width: 100%;
+    height: 130%;
+    object-fit: cover;
+}
+
+.home-login-form-button {
+    width: 51%;
+    height: 35%;
+    background-color:#f24f57 !important;
+    color: white !important;
+    border: none;
+    border-radius: 24px;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    cursor: pointer;
+}
+
+.home-login-form-button:hover {
+    background-color: #e9bbbd !important;
+    color: black !important;
+}
+
+.home-team-header {
+    font-size: 64px; /* Başlık boyutu */
+    font-weight: bold; /* Kalın yazı tipi */
+    color: #f24f57; /* Başlık rengi */
+    background-color: #f9f9f9; /* Arka plan rengi */
+    padding: 10px 20px; /* İçerik boşluğu */
+    border-radius: 8px; /* Yuvarlatılmış köşeler */
+    text-align: center; /* Ortala */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Hafif gölge */
+    display: inline-block; /* Metin genişliğine göre düzen */
+    margin: 20px auto; /* Üst ve alt boşluklar */
+  }
+  
+
+.home-big-container {
+    height: 50%; /* Let the height adjust dynamically */
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping of child elements */
+    justify-content: center; /* Center the elements */
+    align-items: center; /* Align elements vertically */
+    padding: 30px;
+    background-color: whitesmoke;
+    gap: 20px; /* Optional: Add space between items */
+}
+
+.home-person-container {
+    width: 33%; /* Adjust width of each container */
+    height: 45%; /* Fixed height */
+    display: flex; /* Enable flexbox layout */
+    justify-content: flex-start; /* Align items horizontally */
+    align-items: center; /* Align items vertically */
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add shadow for depth */
+    text-align: left; /* Align text to the left */
+    padding: 10px; /* Add padding inside the container */
+    background-color: #f9f9f9; /* Light background for better visibility */
+    gap: 15px; /* Space between photo and text */
+}
+
+.home-communication-container {
+    height: 40%; /* Let the height adjust dynamically */
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping of child elements */
+    justify-content: center; /* Center the elements */
+    align-items: center; /* Align elements vertically */
+    padding: 20px;
+    background-color: rgb(53, 52, 52);
+    gap: 20px;    
+}
+
+.home-photo-container {
+    width: 150px; /* Adjust photo container width */
+    height: auto; /* Match container height */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.home-photo-container img {
+    width: 135px; /* Make image fit the container */
+    height: 135px;
+    border-radius: 50%; /* Optional: Make the image circular */
+    object-fit: cover; /* Ensure the image scales properly */
+}
+
+.home-info-container {
+    width: 65%; /* Adjust information container width */
+    display: flex;
+    flex-direction: column; /* Stack text vertically */
+    justify-content: center;
+    align-items: flex-start; /* Align text to the left */
+    margin-right: 5%;
+    margin-top: 5%;
+}
+
+
+
+.home-small-container {
+    width: 30%; /* Each small container takes 30% of the width */
+    height: 80%; /* Adjust height proportionally */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: Add shadow for depth */
+    text-align: center;
+}
+
+
+.slider {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 500px; /* Adjust for dot position */
+    position: relative;
+}
+/* Center the dots */
+.slick-dots {
+    position: absolute;
+    bottom: 10px; /* Adjust the position as needed */
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 15%;
+}
+
+/* Style individual dots */
+.slick-dots li button {
+    width: 10px; /* Adjust size */
+    height: 10px; /* Adjust size */
+    border-radius: 50%; /* Make them circular */
+    background-color: rgba(255, 255, 255, 0.5); /* Light white color with transparency */
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+/* Add space between dots */
+.slick-dots li {
+    position: unset;
+}
+
+/* Highlight the active dot */
+.slick-dots .slick-active button {
+    background-color: white; /* Solid white for the active dot */
+    width: 12px; /* Slightly larger active dot */
+    height: 12px; /* Slightly larger active dot */
+}
+
+
+.home-big-container {
+    display: flex;
+    gap: 30px; /* Increased spacing between cards */
+    justify-content: center;
+  }
+  
+  .home-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 30px; /* Increased padding for larger spacing */
+    width: 350px; /* Increased card width */
+    height: 250px; /* Increased card height */
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  .home-card-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    font-size: 20px; /* Increased text size */
+  }
+  
+  .home-card-button {
+    width: 100%;
+    background-color: #f24f57 !important; /* Default button color */
+    color: whitesmoke; /* Default text color */
+    border: none;
+    padding: 15px 0; /* Button height */
+    border-radius: 6px;
+    font-size: 18px; /* Text size */
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease; /* Smooth hover effect */
+}
+
+.home-card-button:hover {
+    background-color: #e9bbbd; /* Slightly darker red for hover */
+    transform: scale(1.05); /* Slight enlargement on hover */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adds a shadow for lift effect */
+}
+
+  
+
+  .home-container-wrapper {
+    display: flex;
+    gap: 50px;
+    justify-content: center;
+    margin-top: 30px;
+    margin-bottom: 20px;
+  }
+  
+  .home-info-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden; /* Ensures clean edges */
+    width: 350px; /* Card width */
+    height: 450px; /* Card height increased */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  .home-info-card-image {
+    width: 100%; /* Image covers full width */
+    height: 250px; /* Increased height for the image */
+    object-fit: cover; /* Ensures image scales proportionally */
+  }
+  
+  .home-info-card-text {
+    padding: 15px;
+    font-size: 16px;
+    color: #333;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  
+
+  .footer-section {
+    width: 30%; /* Each section takes up one-third of the container */
+    text-align: center;
+    color: white;
+  }
+  
+  .footer-section h4 {
+    color: white;
+    margin-bottom: 10px;
+  }
+  
+  .footer-section a {
+    color: white;
+    text-decoration: none;
+  }
+  
+  .footer-section a:hover {
+    color: white;
+    text-decoration: underline;
+  }
+  
+  .social-icons a {
+    color: white;
+    margin: 0 5px;
+  }
+  
+  .slick-prev, .slick-next {
+    box-shadow: none !important; /* Ensures no shadow is applied */
+    background: transparent !important; /* Removes any background color */
+  }
