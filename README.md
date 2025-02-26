@@ -1,4 +1,4 @@
-# S2-T1-MeetBilkent
+# MeetBilkent
 
 ## Reports Document 
 
